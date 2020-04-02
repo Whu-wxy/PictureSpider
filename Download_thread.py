@@ -40,14 +40,15 @@ class ThreadWrite(threading.Thread):
         img_link = urljoin(url, img_link1)
 
         filename = os.path.basename(img_link)
-        if len(filename) > 100:
-            filename = filename[100:]
+        if len(filename) > 50:
+            filename = filename[50:]
         if os.path.exists(os.path.join(save_path, filename)):   # 减少重复下载图片的开销
             return
         try:
             r = requests.get(img_link, stream=False, headers=headers, verify=False)
         except requests.exceptions.RequestException as e:
             print(e)
+            print('img requests error')
             return
 
         try:
@@ -55,4 +56,5 @@ class ThreadWrite(threading.Thread):
                 f.write(r.content)
         except Exception as e:
             print(repr(e))
+            print('img save error')
             return

@@ -23,10 +23,7 @@ unseen = set([config.base_url])
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36'
-    # 'Accept-Encoding': '',
-    # #'contentEncoding':'gzip'
 }
-
 
 
 
@@ -100,6 +97,10 @@ async def main(loop):
     async with aiohttp.ClientSession() as session:
         count = 1
         while len(unseen) != 0:
+            # 队列中还有config.thread_num*10个以上的图未下载时，不下载解析网页
+            if img_queue.qsize() > config.thread_num*10:
+                time.sleep(1)
+                continue
             print('Crawled url count: ', len(seen))
             print('UnCrawled url count: ', len(unseen))
             if config.max_page_count != None:
@@ -119,8 +120,8 @@ async def main(loop):
             for title, page_urls, img_links, url in results:
                 print('正在从"%s"下载图片...' % url)
                 title = re.sub('[\/:*?"<>|]', '-', title)    #创建文件夹时去除非法字符
-                if len(title) > 200:
-                    title = title[:200]              #防止文件夹名称过长
+                if len(title) > 50:
+                    title = title[:50]              #防止文件夹名称过长
                 if not os.path.exists(os.path.join(config.save_path + title)):
                     os.makedirs(os.path.join(config.save_path + title))     #一个网页创建一个文件夹
 
@@ -136,10 +137,10 @@ if __name__ == "__main__":
     img_queue = Queue()
 
     URLValid = True
-    if len(config.base_url) < 3:
+    if len(config.base_url) < 4:
         URLValid = False
         print('请输入要爬取的网站地址！')
-    if not config.base_url.startswith('http'):
+    elif not config.base_url.startswith('http'):
         URLValid = False
         print('请输入格式正确的网站地址！')
     if config.max_page_count != None and config.max_page_count <= 0:
@@ -151,7 +152,9 @@ if __name__ == "__main__":
         print('开始从%s爬取图片...' % config.base_url)
 
         thread_list = []
-        loadList = ['线程1', '线程2', '线程3', '线程4', ]
+        loadList = []
+        for i in range(config.thread_num):
+            loadList.append('线程'+str(i))
         for threadName in loadList:
             Ithraad = ThreadWrite(threadName, img_queue)
             Ithraad.start()

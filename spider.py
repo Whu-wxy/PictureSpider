@@ -120,8 +120,8 @@ async def main(loop):
             for title, page_urls, img_links, url in results:
                 print('正在从"%s"下载图片...' % url)
                 title = re.sub('[\/:*?"<>|]', '-', title)    #创建文件夹时去除非法字符
-                if len(title) > 200:
-                    title = title[:200]              #防止文件夹名称过长
+                if len(title) > 50:
+                    title = title[:50]              #防止文件夹名称过长
                 if not os.path.exists(os.path.join(config.save_path + title)):
                     os.makedirs(os.path.join(config.save_path + title))     #一个网页创建一个文件夹
 
@@ -135,8 +135,8 @@ def download_imgs(img_links, saveDir, url):
     for IMAGE_URL in img_links:
         IMAGE_URL = urljoin(url, IMAGE_URL)
         filename = os.path.basename(IMAGE_URL)
-        if len(filename) > 100:
-            filename = filename[100:]
+        if len(filename) > 50:
+            filename = filename[50:]
         if os.path.exists(os.path.join(saveDir, filename)):    # 减少重复下载图片的开销
             return
         try:
@@ -158,9 +158,12 @@ def download_imgs(img_links, saveDir, url):
 
 if __name__ == "__main__":
     URLValid = True
-    if len(config.base_url) < 3:
+    if len(config.base_url) < 4:
         URLValid = False
         print('请输入要爬取的网站地址！')
+    elif not config.base_url.startswith('http'):
+        URLValid = False
+        print('请输入格式正确的网站地址！')
     if config.max_page_count != None and config.max_page_count <= 0:
         print('最大爬取页数必须大于0！')
     elif URLValid:
