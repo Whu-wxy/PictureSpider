@@ -61,16 +61,24 @@ def parse(html, url):
     url_list = []
     for url_i in urls:
         url_i = url_i['href']
+        if len(url_i) < 2:
+            continue
         url_i = url_i.replace("\n", "")
         url_i = url_i.replace("\r", "")
-        url_list.append(urljoin(url, url_i))     
+        url_list.append(urljoin(url, url_i.strip()))
     page_urls = set(url_list)
 
     # 找出所有图片url
-    imgs = soup.find_all("img", {"src": re.compile('.+/.+?')}, recursive=True)
+    url_feature = '^[\s\S]*(' + config.img_url_keyword + ')[\s\S]*$'
+    imgs = soup.find_all("img", {"src": re.compile(url_feature)}, recursive=True)
     img_links = []
     for link in imgs:
-        img_links.append(link['src'])
+        link = link['src']
+        if len(link) < 2:
+            continue
+        link = link.replace("\n", "")
+        link = link.replace("\r", "")
+        img_links.append(link.strip())
 
     return title, page_urls, img_links, url
 
@@ -114,39 +122,35 @@ async def main(loop):
                 title = re.sub('[\/:*?"<>|]', '-', title)    #创建文件夹时去除非法字符
                 if len(title) > 200:
                     title = title[:200]              #防止文件夹名称过长
-                if not os.path.exists('./imgs/'+title):
-                    os.makedirs('./imgs/'+title)     #一个网页创建一个文件夹
+                if not os.path.exists(os.path.join(config.save_path + title)):
+                    os.makedirs(os.path.join(config.save_path + title))     #一个网页创建一个文件夹
 
                 unseen.update(page_urls - seen)
                 count += 1
 
-                download_imgs(img_links, './imgs/' + title, url)
+                download_imgs(img_links, os.path.join(config.save_path + title), url)
 
 #下载图片
 def download_imgs(img_links, saveDir, url):
     for IMAGE_URL in img_links:
         IMAGE_URL = urljoin(url, IMAGE_URL)
         filename = os.path.basename(IMAGE_URL)
-        if len(filename) > 200:
-            filename = filename[:200]    
+        if len(filename) > 100:
+            filename = filename[100:]
+        if os.path.exists(os.path.join(saveDir, filename)):    # 减少重复下载图片的开销
+            return
         try:
-            r = requests.get(IMAGE_URL, stream=True, headers=headers, verify=False)  # stream loading   , proxies = proxies
+            r = requests.get(IMAGE_URL, stream=False, headers=headers, verify=False)  # stream loading   , proxies = proxies
         except requests.exceptions.RequestException as e:
             print(e)
-            print('error get img')
             continue
 
         try:
-            #print(saveDir + '/' + filename)
-            with open(saveDir + '/' + filename, 'wb') as f:
+            with open(os.path.join(saveDir, filename), 'wb') as f:
                 f.write(r.content)
-                # for chunk in r.iter_content(chunk_size=1024):
-                #     if chunk:
-                #         f.write(chunk)
                 
         except Exception as e:
             print(repr(e))
-            print('error save img')
             continue
 
         time.sleep(0.1)

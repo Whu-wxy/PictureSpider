@@ -2,7 +2,6 @@ import aiohttp
 import asyncio
 import time
 from bs4 import BeautifulSoup
-#from urllib.request import urljoin
 import re
 import multiprocessing as mp
 import os
@@ -11,6 +10,8 @@ import random
 import urllib3
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import requests
+from queue import Queue
+from Download_thread import ThreadWrite
 
 import config
 
@@ -22,7 +23,12 @@ unseen = set([config.base_url])
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36'
+    # 'Accept-Encoding': '',
+    # #'contentEncoding':'gzip'
 }
+
+
+
 
 # proxies = {'http':'http://117.88.5.202',
 #            'https':'https://117.88.177.33',
@@ -36,15 +42,8 @@ headers = {
 #解析网页数据
 def parse(html, url):
     soup = BeautifulSoup(html, 'lxml')
-    # with open('./save.html', 'w', encoding='utf-8') as f:
-    #     f.write(html)
-    #     f.close()
     url_feature = '^[\s\S]*(' + config.url_keyword + ')[\s\S]+$'
-    #url_feature = '^.*.+$'
     urls = soup.find_all('a', {"href": re.compile(url_feature)}, recursive=True)   #^.+/.+?$
-
-    # for url_i in urls:
-    #     print(url_i['href'])
 
     # 为图片保存的文件夹找一个合适的名字
     title = soup.find('title')
@@ -61,16 +60,24 @@ def parse(html, url):
     url_list = []
     for url_i in urls:
         url_i = url_i['href']
+        if len(url_i) < 2:
+            continue
         url_i = url_i.replace("\n", "")
         url_i = url_i.replace("\r", "")
-        url_list.append(urljoin(url, url_i))     
+        url_list.append(urljoin(url, url_i.strip()))
     page_urls = set(url_list)
 
     # 找出所有图片url
-    imgs = soup.find_all("img", {"src": re.compile('.+/.+?')}, recursive=True)
+    url_feature = '^[\s\S]*(' + config.img_url_keyword + ')[\s\S]*$'
+    imgs = soup.find_all("img", {"src": re.compile(url_feature)}, recursive=True)
     img_links = []
     for link in imgs:
-        img_links.append(link['src'])
+        link = link['src']
+        if len(link) < 2:
+            continue
+        link = link.replace("\n", "")
+        link = link.replace("\r", "")
+        img_links.append(link.strip())
 
     return title, page_urls, img_links, url
 
@@ -114,78 +121,53 @@ async def main(loop):
                 title = re.sub('[\/:*?"<>|]', '-', title)    #创建文件夹时去除非法字符
                 if len(title) > 200:
                     title = title[:200]              #防止文件夹名称过长
-                if not os.path.exists('./imgs/'+title):
-                    os.makedirs('./imgs/'+title)     #一个网页创建一个文件夹
+                if not os.path.exists(os.path.join(config.save_path + title)):
+                    os.makedirs(os.path.join(config.save_path + title))     #一个网页创建一个文件夹
 
                 unseen.update(page_urls - seen)
                 count += 1
 
-                download_imgs(img_links, './imgs/' + title, url)
+                for link in img_links:
+                    img_queue.put((link, os.path.join(config.save_path + title), url))
 
-#下载图片
-def download_imgs(img_links, saveDir, url):
-    for IMAGE_URL in img_links:
-        IMAGE_URL = urljoin(url, IMAGE_URL)
-        filename = os.path.basename(IMAGE_URL)
-        if len(filename) > 200:
-            filename = filename[:200]    
-        try:
-            r = requests.get(IMAGE_URL, stream=True, headers=headers, verify=False)  # stream loading   , proxies = proxies
-        except requests.exceptions.RequestException as e:
-            print(e)
-            print('error get img')
-            continue
-
-        try:
-            #print(saveDir + '/' + filename)
-            with open(saveDir + '/' + filename, 'wb') as f:
-                f.write(r.content)
-                # for chunk in r.iter_content(chunk_size=1024):
-                #     if chunk:
-                #         f.write(chunk)
-                
-        except Exception as e:
-            print(repr(e))
-            print('error save img')
-            continue
-
-        time.sleep(0.1)
 
 
 if __name__ == "__main__":
+    img_queue = Queue()
+
     URLValid = True
     if len(config.base_url) < 3:
         URLValid = False
         print('请输入要爬取的网站地址！')
+    if not config.base_url.startswith('http'):
+        URLValid = False
+        print('请输入格式正确的网站地址！')
     if config.max_page_count != None and config.max_page_count <= 0:
         print('最大爬取页数必须大于0！')
     elif URLValid:
         if config.max_page_count == None:
             print('将爬取所有网页图片！手动停止(Ctrl+C)或爬取完所有网页！')
-            
+
         print('开始从%s爬取图片...' % config.base_url)
+
+        thread_list = []
+        loadList = ['线程1', '线程2', '线程3', '线程4', ]
+        for threadName in loadList:
+            Ithraad = ThreadWrite(threadName, img_queue)
+            Ithraad.start()
+            thread_list.append(Ithraad)
+
         t1 = time.time()
         loop = asyncio.get_event_loop()
         loop.run_until_complete(main(loop))
         loop.close()
         print("Total time: ", time.time() - t1)
 
+        print('等待图片下载...')
+
+        for thread in thread_list:
+            thread.THREAD_EXIT = True
+            thread.join()
+
     print('结束！')
 
-
-
-    # html = ''
-    # with open('F:\save2.html', 'r', encoding='utf-8') as f:
-    #     html = f.read()
-    #     f.close()
-    # soup = BeautifulSoup(html, 'lxml')
-    # url_feature = '^[\s\S]*' + config.url_keyword + '[\s\S]+$'
-    # urls = soup.find_all('a', {"href": re.compile(url_feature)}, recursive=True)
-
-    # for url in urls:
-    #     print(url['href'])
-
-
-    # a = 'https://www.zjmuex.com/Collection/List/TSGC?etype=&areac=2ebfaf78-7f8c-47e9-8862-37b57baf05ea&city=80811da7-9a34-4705-8681-f88dec3a3c8b&fclass=&unit=2&title='
-    # url_feature = '^.*' + config.url_keyword + '.+$'
-    # print(re.match(url_feature, a))

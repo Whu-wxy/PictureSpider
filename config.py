@@ -6,9 +6,17 @@ base_url = "http://www.zhejiangmuseum.com/zjbwg/collection/zpmcollection.html"
 #https://morvanzhou.github.io/
 #http://www.scmuseum.cn/list-1657.html
 
+
+
 # 最大爬取页数：数字或None(一直爬取)
-max_page_count = None       
+max_page_count = 20
 
 # 先用审查元素找到关键词，用url中的关键词筛选url,用|隔开，为空则选取全部url
-url_keyword = 'Collection|UploadFiles'
+url_keyword = 'Collection|UploadFiles'   #Collection|UploadFiles
+
+img_url_keyword = ''
+
+# 图片存储路径，如果不存在，将会创建文件夹
+# 将会在这个文件夹下为每个网页创建一个子文件夹存图片
+save_path = './imgs/'
 
