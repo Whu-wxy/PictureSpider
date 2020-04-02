@@ -6,6 +6,7 @@ import requests
 import time
 import urllib3
 import os
+import re
 
 import config
 
@@ -40,6 +41,7 @@ class ThreadWrite(threading.Thread):
         img_link = urljoin(url, img_link1)
 
         filename = os.path.basename(img_link)
+        filename = re.sub('[\/:*?"<>|]', '-', filename)
         if len(filename) > 50:
             filename = filename[50:]
         if os.path.exists(os.path.join(save_path, filename)):   # 减少重复下载图片的开销
@@ -56,5 +58,5 @@ class ThreadWrite(threading.Thread):
                 f.write(r.content)
         except Exception as e:
             print(repr(e))
-            print('img save error')
+            print('img save error:', os.path.join(save_path, filename))
             return

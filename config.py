@@ -1,5 +1,5 @@
 # 开始爬取的网址
-base_url = "http://www.zhejiangmuseum.com/zjbwg/collection/zpmcollection.html"
+base_url = "https://www.oschina.net/"
 #http://www.zhejiangmuseum.com/zjbwg/collection/zpmcollection.html
 #https://www.zjmuex.com/Collection/List/TSGC?etype=&areac=2ebfaf78-7f8c-47e9-8862-37b57baf05ea&city=80811da7-9a34-4705-8681-f88dec3a3c8b&fclass=&unit=2&title=
 #https://www.deepin.org/

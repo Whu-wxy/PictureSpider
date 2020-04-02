@@ -135,6 +135,7 @@ def download_imgs(img_links, saveDir, url):
     for IMAGE_URL in img_links:
         IMAGE_URL = urljoin(url, IMAGE_URL)
         filename = os.path.basename(IMAGE_URL)
+        filename = re.sub('[\/:*?"<>|]', '-', filename)
         if len(filename) > 50:
             filename = filename[50:]
         if os.path.exists(os.path.join(saveDir, filename)):    # 减少重复下载图片的开销
