@@ -54,9 +54,18 @@ class ThreadWrite(threading.Thread):
             return
 
         try:
+            if len(r.content) / 1024 < config.img_size_threld:
+                return
             with open(os.path.join(save_path, filename), 'wb') as f:
+                #print('response size: ', len(r.content)/1024, 'KB')
                 f.write(r.content)
         except Exception as e:
             print(repr(e))
             print('img save error:', os.path.join(save_path, filename))
             return
+
+# response size:  13905
+# response size:  20974
+# response size:  8052
+# response size:  538
+# response size:  837

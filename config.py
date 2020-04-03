@@ -8,7 +8,7 @@ base_url = "https://www.oschina.net/"
 
 
 # 最大爬取页数：数字或None(一直爬取)
-max_page_count = 25
+max_page_count = 10
 
 # 先用审查元素找到关键词，用url中的关键词筛选url,用|隔开，为空则选取全部url
 url_keyword = ''   #Collection|UploadFiles
@@ -22,3 +22,6 @@ save_path = './imgs/'
 #下载图片线程数
 thread_num = 4
 
+
+# 下载图片的最小KB值
+img_size_threld = 10      # KB

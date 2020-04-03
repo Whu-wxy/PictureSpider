@@ -147,6 +147,8 @@ def download_imgs(img_links, saveDir, url):
             continue
 
         try:
+            if len(r.content) / 1024 < config.img_size_threld:
+                return
             with open(os.path.join(saveDir, filename), 'wb') as f:
                 f.write(r.content)
                 
