@@ -27,13 +27,12 @@ class ThreadWrite(threading.Thread):
 
     def run(self):
         print(self.threadName + ' begin.')
-        while not self.THREAD_EXIT:
-            if not self.imageQueue.empty():
-                try:
-                    img_link, save_path, url = self.imageQueue.get(block=False)
-                    self.writeImage(img_link, save_path, url)
-                except Exception as e:
-                    pass
+        while not self.THREAD_EXIT and not self.imageQueue.empty():
+            try:
+                img_link, save_path, url = self.imageQueue.get(block=False)
+                self.writeImage(img_link, save_path, url)
+            except Exception as e:
+                pass
             time.sleep(0.1)
         print(self.threadName + ' finish.')
 
@@ -44,8 +43,9 @@ class ThreadWrite(threading.Thread):
         filename = re.sub('[\/:*?"<>|]', '-', filename)
         if len(filename) > 50:
             filename = filename[50:]
-        if os.path.exists(os.path.join(save_path, filename)):   # 减少重复下载图片的开销
-            return
+        # if os.path.exists(os.path.join(save_path, filename)):   # 减少重复下载图片的开销
+        #     print('exist')
+        #     return
         try:
             r = requests.get(img_link, stream=False, headers=headers, verify=False)
         except requests.exceptions.RequestException as e:
@@ -63,9 +63,3 @@ class ThreadWrite(threading.Thread):
             print(repr(e))
             print('img save error:', os.path.join(save_path, filename))
             return
-
-# response size:  13905
-# response size:  20974
-# response size:  8052
-# response size:  538
-# response size:  837

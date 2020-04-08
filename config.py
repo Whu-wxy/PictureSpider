@@ -24,4 +24,4 @@ thread_num = 4
 
 
 # 下载图片的最小KB值
-img_size_threld = 10      # KB
+img_size_threld = 0      # KB
