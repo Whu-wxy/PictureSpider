@@ -78,8 +78,8 @@ def parse(html):
     return img_links
 
 if __name__ == '__main__':
-    url = 'https://www.shipspotting.com/photos/gallery?shipName=&shipNameSearchMode=begins&imo=&mmsi=&eni=&pennant=&callSign=&category=&flag=&homePort=&buildYear=&status=&classSociety=&builder=&owner=&manager=&user=&country=China&port=&sortBy=newest&perPage=12&viewType=normal'
-    request_img_number = 1000
+    url = 'https://www.shipspotting.com/photos/gallery?shipName=&shipNameSearchMode=begins&imo=&mmsi=&eni=&pennant=&callSign=&category=&user=&country=China&port=&includeSubPorts=on&perPage=192&viewType=thumb&sortBy=newest'
+    request_img_number = 2000
     img_queue = Queue()
     thread_list = []
     loadList = []
@@ -97,15 +97,24 @@ if __name__ == '__main__':
     # locator = (By.ID, 'root')
     WebDriverWait(driver, 10).until(EC.presence_of_element_located(locator))
     print('WebDriverWait finish')
+    last_num = 0
+    download_links = set()
     while True:
         html = scroll_page()
         img_links = parse(html) 
-        # print(img_links)
+        img_links_set = set(img_links)
+        new_links = download_links^img_links_set
+
         print('progress: ', '[',len(img_links), '/', request_img_number, ']')
-        if len(img_links) > request_img_number:
-            for link in img_links:
+        if last_num != len(img_links):
+            for link in new_links:
                 img_queue.put(('', config.save_path, link))
+            download_links = download_links | new_links
+
+        if len(img_links) > request_img_number:
             break
+
+        last_num = len(img_links)
 
     driver.quit()
 
