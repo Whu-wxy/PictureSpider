@@ -99,9 +99,9 @@ if __name__ == '__main__':
     print('WebDriverWait finish')
     while True:
         html = scroll_page()
-        print('scroll finish')
-        img_links = parse(html)
-        print(img_links)
+        img_links = parse(html) 
+        # print(img_links)
+        print('progress: ', '[',len(img_links), '/', request_img_number, ']')
         if len(img_links) > request_img_number:
             for link in img_links:
                 img_queue.put(('', config.save_path, link))
