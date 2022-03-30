@@ -21,6 +21,8 @@ import re
 options = webdriver.ChromeOptions()
 options.add_argument("service_args=['–ignore-ssl-errors=true', '–ssl-protocol=TLSv1']") # Python2/3
 options.add_experimental_option('excludeSwitches', ['enable-automation'])
+options.add_argument('--ignore-certificate-errors')   # 忽略掉证书错误
+options.add_argument('-ignore-ssl-errors')
 # options.add_argument('headless')
 
 #get直接返回，不再等待界面加载完成
@@ -28,7 +30,8 @@ desired_capabilities = DesiredCapabilities.CHROME
 desired_capabilities["pageLoadStrategy"] = "none"
 
 # 打开chrome浏览器
-driver = webdriver.Chrome('C:/Program Files (x86)/Google/Chrome/Application/chromedriver.exe', chrome_options=options)
+# C:/Program Files (x86)/Google/Chrome/Application/chromedriver.exe or D:\UserApps\Programs\Python\Scripts
+driver = webdriver.Chrome(options=options)
 driver.maximize_window()
 # driver.set_page_load_timeout(30)  #页面加载超时时间
 # driver.set_script_timeout(30)  #页面js加载超时时间
@@ -76,7 +79,7 @@ def parse(html):
 
 if __name__ == '__main__':
     url = 'https://www.shipspotting.com/photos/gallery?shipName=&shipNameSearchMode=begins&imo=&mmsi=&eni=&pennant=&callSign=&category=&flag=&homePort=&buildYear=&status=&classSociety=&builder=&owner=&manager=&user=&country=China&port=&sortBy=newest&perPage=12&viewType=normal'
-    request_img_number = 10
+    request_img_number = 1000
     img_queue = Queue()
     thread_list = []
     loadList = []

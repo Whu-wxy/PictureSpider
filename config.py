@@ -20,7 +20,7 @@ img_url_keyword = 'photos'
 save_path = './imgs/'
 
 #下载图片线程数
-thread_num = 2
+thread_num = 4
 
 
 # 下载图片的最小KB值
