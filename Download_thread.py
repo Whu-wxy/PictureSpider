@@ -27,16 +27,22 @@ class ThreadWrite(threading.Thread):
 
     def run(self):
         print(self.threadName + ' begin.')
-        while not self.THREAD_EXIT and not self.imageQueue.empty():
+        while not self.THREAD_EXIT or not self.imageQueue.empty():
+            if self.imageQueue.empty():
+                time.sleep(1)
+                continue
             try:
                 img_link, save_path, url = self.imageQueue.get(block=False)
                 self.writeImage(img_link, save_path, url)
             except Exception as e:
                 pass
-            time.sleep(0.1)
+            time.sleep(random.uniform(0, 1))
         print(self.threadName + ' finish.')
 
     def writeImage(self, img_link1, save_path, url):
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+
         img_link = urljoin(url, img_link1)
 
         filename = os.path.basename(img_link)

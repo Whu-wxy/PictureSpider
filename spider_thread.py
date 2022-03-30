@@ -39,7 +39,6 @@ headers = {
 #解析网页数据
 def parse(html, url):
     soup = BeautifulSoup(html, 'lxml')
-    
 
     url_feature = '^[\s\S]*(' + config.url_keyword + ')[\s\S]+$'
     urls = soup.find_all('a', {"href": re.compile(url_feature)}, recursive=True)   #^.+/.+?$

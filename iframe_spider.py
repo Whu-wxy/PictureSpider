@@ -17,10 +17,7 @@ options.add_experimental_option('excludeSwitches', ['enable-automation'])
 
 driver = webdriver.Chrome('C:/Program Files (x86)/Google/Chrome/Application/chromedriver.exe', chrome_options=chrome_options)
 
-
-print('1')
 def getDriverHttp(url):
-    print('2')
     soup = ''
     try:
         element = WebDriverWait(driver, 1200).until(driver.get(url))
@@ -49,18 +46,7 @@ def getDriverHttp(url):
     #driver.quit()
     return soup
 
-
-def getVideoUrl(url):
-    soup = getDriverHttp(url)
-    miPlayer = soup.find('div',id='J_miPlayer')
-    url = miPlayer.find('video').get('src')
-    driver.quit()
-    return url
-
-
 if __name__ == '__main__':
-    #path = getVideoUrl(u'http://aaxxy.com/vod-play-id-10788-src-1-num-2.html')
-
     getDriverHttp('https://curiosity.lib.harvard.edu/chinese-rubbings-collection/catalog/6-990095673240203941')
 
 #document.querySelector("html")

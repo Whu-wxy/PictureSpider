@@ -13,14 +13,14 @@ max_page_count = 10
 # 先用审查元素找到关键词，用url中的关键词筛选url,用|隔开，为空则选取全部url
 url_keyword = ''   #Collection|UploadFiles
 
-img_url_keyword = ''
+img_url_keyword = 'photos'
 
 # 图片存储路径，如果不存在，将会创建文件夹
 # 将会在这个文件夹下为每个网页创建一个子文件夹存图片
 save_path = './imgs/'
 
 #下载图片线程数
-thread_num = 4
+thread_num = 2
 
 
 # 下载图片的最小KB值
